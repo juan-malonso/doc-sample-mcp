@@ -10,7 +10,6 @@ const DOCUMENT_TYPES = [
   "DRIVER_LICENSE",
   "RESIDENT",
 ] as const;
-const DOCUMENT_ASSET_TYPES = ["FRONT", "BACK", "FULL", "SELFIE", "OTHER"] as const;
 
 const env = readEnvironment();
 const server = new McpServer({
@@ -35,8 +34,7 @@ server.registerTool(
   },
   async ({ country, type }) => {
     const payload = await requestJson(
-      `/api/v1/documents/${encodeURIComponent(country.toUpperCase())}/${type}`,
-      "GET",
+      `/api/mcp/${encodeURIComponent(country.toUpperCase())}/${type}`,
     );
 
     return asJsonContent(payload);
@@ -61,55 +59,8 @@ server.registerTool(
   },
   async ({ country, type, id }) => {
     const payload = await requestJson(
-      `/api/v1/documents/${encodeURIComponent(country.toUpperCase())}/${type}/${id}`,
-      "GET",
+      `/api/mcp/${encodeURIComponent(country.toUpperCase())}/${type}/${id}`,
     );
-
-    return asJsonContent(payload);
-  },
-);
-
-server.registerTool(
-  "create_document",
-  {
-    title: "Create document",
-    description:
-      "Create a document using base64 files. Requires an API key with document:create permission.",
-    inputSchema: {
-      countryCode: z
-        .string()
-        .min(2)
-        .max(2)
-        .describe("ISO 3166-1 alpha-2 country code, for example ES or DE."),
-      type: z.enum(DOCUMENT_TYPES).describe("Document type."),
-      name: z.string().min(2).describe("Document display name."),
-      year: z.number().int().min(1900).max(2100).describe("Document year."),
-      files: z
-        .array(
-          z.object({
-            assetType: z.enum(DOCUMENT_ASSET_TYPES),
-            mimeType: z
-              .string()
-              .min(1)
-              .describe("Image MIME type, for example image/jpeg."),
-            content: z
-              .string()
-              .min(1)
-              .describe("Raw base64 content without a data: prefix."),
-          }),
-        )
-        .min(1)
-        .describe("Document files in base64."),
-    },
-  },
-  async (input) => {
-    const payload = await requestJson("/api/v1/documents", "POST", {
-      countryCode: input.countryCode.toUpperCase(),
-      type: input.type,
-      name: input.name,
-      year: input.year,
-      files: input.files,
-    });
 
     return asJsonContent(payload);
   },
@@ -132,7 +83,7 @@ server.registerResource(
           {
             baseUrl: env.baseUrl,
             availableDocumentTypes: DOCUMENT_TYPES,
-            availableAssetTypes: DOCUMENT_ASSET_TYPES,
+            requiredPermissions: ["mcp:list", "mcp:read"],
           },
           null,
           2,
@@ -161,16 +112,13 @@ function readEnvironment(): { baseUrl: string; apiKey: string } {
 
 async function requestJson(
   path: string,
-  method: "GET" | "POST",
-  body?: unknown,
+  method: "GET" = "GET",
 ): Promise<unknown> {
   const response = await fetch(`${env.baseUrl}${path}`, {
     method,
     headers: {
       "x-api-key": env.apiKey,
-      ...(body === undefined ? {} : { "content-type": "application/json" }),
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
   });
 
   const text = await response.text();

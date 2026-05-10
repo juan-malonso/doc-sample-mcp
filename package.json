@@ -3,11 +3,16 @@
   "version": "0.1.0",
   "description": "MCP server for the DocSample public API.",
   "type": "module",
+  "main": "dist/index.js",
   "bin": {
     "doc-sample-mcp": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run type-check && npm run build",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "start": "node dist/index.js"
   },
@@ -31,5 +36,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
