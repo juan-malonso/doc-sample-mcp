@@ -1,0 +1,35 @@
+{
+  "name": "doc-sample-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for the DocSample public API.",
+  "type": "module",
+  "bin": {
+    "doc-sample-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juan-malonso/doc-sample-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "doc-sample"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
